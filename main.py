@@ -1,13 +1,12 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from config.database import Session, engine, Base
+from models.period import Period
 import json
 
 app = FastAPI()
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
+Base.metadata.create_all(bind=engine)
 
 origins = [
     "http://localhost:3000",   
@@ -17,26 +16,46 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["get"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
-
-def load_academic_periods():
-    with open("period.json", "r") as file:
-        academic_periods = json.load(file)
-    return academic_periods
 
 
 @app.get("/period/{id}")
 def getPeriod(id: int):
-    academic_periods = load_academic_periods()
-    for period in academic_periods:
-        if period["id"] == id:
-            return period
-    return {"Error": "The academic period was not found"}
+    try:
+        db = Session()
+        academic_period = db.query(Period).filter(Period.id == id).first()
+        db.close()
+        return academic_period
+    except:
+        return {"message": "Period not found"}
+    
 
 @app.get("/periods")
 def getPeriods():
-    academic_periods = load_academic_periods()
-    return academic_periods
+    try:
+        db = Session()
+        academic_periods = db.query(Period).all()
+        db.close()
+        return academic_periods
+    except:
+        return {"message": "Periods not found"}
+
+@app.post("/period")
+def createPeriod(data: dict):
+    try:
+        db = Session()
+        academic_period = Period(name=data["name"],year=data["year"], semester=data["semester"] , startDate=data["startDate"], endDate=data["endDate"])
+        db.add(academic_period)
+        db.commit()
+        db.close()
+        return {"message": "Period created successfully"}
+    except:
+        return {"message": "Period not created"}
+    
+
+
+
+
 

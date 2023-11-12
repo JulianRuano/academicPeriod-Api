@@ -31,3 +31,15 @@ La aplicación estará disponible en http://127.0.0.1:8000/.
 - Obtener todos los periodos: http://127.0.0.1:8000/periods
 
 - Obtener un periodo específico (por ejemplo, el periodo con ID 1): http://127.0.0.1:8000/period/1
+
+- Crear un periodo: http://127.0.0.1:8000/period/
+request body:
+```json
+{
+  "name": "Periodo Academico 2023",
+  "year": "2023",
+  "semester": 1,
+  "startDate": "2023-01-15",
+  "endDate": "2023-05-15"
+}
+```
